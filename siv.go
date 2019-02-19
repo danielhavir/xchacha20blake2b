@@ -50,9 +50,8 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	if dst != nil {
 		if len(dst) != msgLen {
 			return nil, fmt.Errorf("dst must be %d bytes long, received %d", msgLen, len(dst))
-		} else {
-			plaintext = dst
 		}
+		plaintext = dst
 	} else {
 		plaintext = make([]byte, msgLen)
 	}

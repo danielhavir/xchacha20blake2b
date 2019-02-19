@@ -47,5 +47,5 @@ func main() {
 ```
 
 ## References
-* Go [crypto package](https://godoc.org/golang.org/x/crypto)
-* Go [ecdh package](https://godoc.org/github.com/aead/ecdh)
+* Go [crypto blake2b package](https://godoc.org/golang.org/x/crypto/blake2b)
+* Andreas Auernhammer, Go [chacha20 package](https://github.com/aead/chacha20)
