@@ -4,7 +4,7 @@
 This project implements the XChaCha20-Blake2b in the synthetic IV constructions (MAC-then-encrypt) autheticated encryption construction with extended 192-bit nonce.
 
 ## Install
-* Run `go get -u https://github.com/danielhavir/xchacha20blake2b-siv`
+* Run `go get -u https://github.com/danielhavir/xchacha20blake2b`
 
 ## Example
 ```go
