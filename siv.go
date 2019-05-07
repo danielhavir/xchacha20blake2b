@@ -18,11 +18,56 @@ type xchacha20SIV struct {
 	encKey, macKey []byte
 }
 
+// If x and y are non-negative integers, we define Z = toByte(x, y) to
+// be the y-byte string containing the binary representation of x in
+// big-endian byte order.
+func toByte(x, y int) (z []byte) {
+	z = make([]byte, y)
+	ux := uint64(x)
+	var xByte byte
+	for i := y - 1; i >= 0; i-- {
+		xByte = byte(ux)
+		z[i] = xByte & 0xff
+		ux = ux >> 8
+	}
+	return
+}
+
+// Expands an 32-byte array into a 64 byte array using the hashed key-derivation function
+func expandSeed(seed []byte) (expanded []byte, err error) {
+	expanded = make([]byte, KeySize)
+	h, err := blake2b.New256(seed)
+	if err != nil {
+		return
+	}
+
+	ctr := make([]byte, 32)
+	n := (KeySize / 2)
+	var idx int
+	for i := 0; i < 2; i++ {
+		ctr = toByte(i, 32)
+		idx = i * n
+		h.Write(ctr)
+		h.Write(seed)
+		copy(expanded[idx:idx+n], h.Sum(nil))
+	}
+	return
+}
+
 // New is a constructor for the XChaCha20Blake2b-SIV
 func New(key []byte) (cipher.AEAD, error) {
-	if len(key) != KeySize {
-		return nil, errors.New("Key is not 64 bytes")
+	if len(key) == 32 {
+		var err error
+		key, err = expandSeed(key)
+		if err != nil {
+			return nil, err
+		}
 	}
+
+	if len(key) != KeySize {
+		return nil, errors.New("key is must be either 32 or 64 bytes")
+	}
+
 	return &xchacha20SIV{
 		encKey: key[32:],
 		macKey: key[:32],
