@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/danielhavir/xchacha20blake2b.svg?branch=master)](https://travis-ci.org/danielhavir/xchacha20blake2b) [![Go Report Card](https://goreportcard.com/badge/github.com/danielhavir/xchacha20blake2b)](https://goreportcard.com/report/github.com/danielhavir/xchacha20blake2b)
+[![Godoc Reference](https://godoc.org/github.com/danielhavir/xchacha20blake2b?status.svg)](https://godoc.org/github.com/danielhavir/xchacha20blake2b)
+[![Build Status](https://travis-ci.org/danielhavir/xchacha20blake2b.svg?branch=master)](https://travis-ci.org/danielhavir/xchacha20blake2b)
+[![Go Report Card](https://goreportcard.com/badge/github.com/danielhavir/xchacha20blake2b)](https://goreportcard.com/report/github.com/danielhavir/xchacha20blake2b)
 
 # AEAD: XChaCha20-Blake2b SIV
 This project implements the XChaCha20-Blake2b in the synthetic IV constructions (MAC-then-encrypt) autheticated encryption construction with extended 192-bit nonce.
