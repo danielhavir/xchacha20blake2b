@@ -12,6 +12,7 @@ import (
 
 // KeySize specifies the expected size of the key in bytes
 const KeySize = 32
+const chachaPolyNonceSize = 24
 
 // xchacha20SIV
 type xchacha20SIV struct {
@@ -72,7 +73,7 @@ func New(key []byte) (cipher.AEAD, error) {
 
 // NonceSize returns the size of the nonce.
 func (*xchacha20SIV) NonceSize() int {
-	return 24
+	return 0
 }
 
 // Overhead returns the maximum difference between the lengths of a
@@ -96,8 +97,8 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	} else {
 		plaintext = make([]byte, msgLen)
 	}
-	nonce = make([]byte, s.NonceSize())
-	copy(nonce, ciphertext[msgLen:msgLen+s.NonceSize()])
+	nonce = make([]byte, chachaPolyNonceSize)
+	copy(nonce, ciphertext[msgLen:msgLen+chachaPolyNonceSize])
 
 	cphr, err := chacha20.NewCipher(nonce, s.encKey)
 	if err != nil {
@@ -141,11 +142,11 @@ func (s *xchacha20SIV) Seal(dst, nonce, plaintext, additionalData []byte) (ciphe
 		panic(err)
 	}
 
-	nonce = make([]byte, s.NonceSize())
+	nonce = make([]byte, chachaPolyNonceSize)
 	hash.Write(plaintext)
 	hash.Write(additionalData)
 	mac := hash.Sum(nil)
-	copy(nonce, mac[:s.NonceSize()])
+	copy(nonce, mac[:chachaPolyNonceSize])
 
 	cphr, err := chacha20.NewCipher(nonce, s.encKey)
 	if err != nil {

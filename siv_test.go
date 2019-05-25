@@ -34,6 +34,20 @@ func TestXChaCha20Blake2bSIV(t *testing.T) {
 		t.Error("incorrect additional data does not invalidate decryption")
 	}
 
+	ct[0] ^= 1
+	_, err = cphr.Open(nil, nil, ct, aad)
+	if err == nil {
+		t.Error("flipping a bit in the ciphertext does not break decryption")
+	}
+	ct[0] ^= 1
+
+	ct[len(pt)+1] ^= 1
+	_, err = cphr.Open(nil, nil, ct, aad)
+	if err == nil {
+		t.Error("flipping a bit in the MAC does not break decryption")
+	}
+	ct[len(pt)+1] ^= 1
+
 	cphr2, err := New(make([]byte, KeySize))
 	if err != nil {
 		t.Error(err)
