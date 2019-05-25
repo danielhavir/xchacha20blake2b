@@ -11,7 +11,7 @@ import (
 )
 
 // KeySize specifies the expected size of the key in bytes
-const KeySize = 64
+const KeySize = 32
 
 // xchacha20SIV
 type xchacha20SIV struct {
@@ -35,37 +35,33 @@ func toByte(x, y int) (z []byte) {
 
 // Expands an 32-byte array into a 64 byte array using the hashed key-derivation function
 func expandSeed(seed []byte) (expanded []byte, err error) {
-	expanded = make([]byte, KeySize)
+	expanded = make([]byte, 2*KeySize)
 	h, err := blake2b.New256(seed)
 	if err != nil {
 		return
 	}
 
-	ctr := make([]byte, 32)
-	n := (KeySize / 2)
+	var ctr []byte
 	var idx int
 	for i := 0; i < 2; i++ {
 		ctr = toByte(i, 32)
-		idx = i * n
+		idx = i * KeySize
 		h.Write(ctr)
 		h.Write(seed)
-		copy(expanded[idx:idx+n], h.Sum(nil))
+		copy(expanded[idx:idx+KeySize], h.Sum(nil))
 	}
 	return
 }
 
-// New is a constructor for the XChaCha20Blake2b-SIV
+// New returns a XChaCha20-Blake2b-SIV AEAD that uses the given 256-bit key
 func New(key []byte) (cipher.AEAD, error) {
-	if len(key) == 32 {
-		var err error
-		key, err = expandSeed(key)
-		if err != nil {
-			return nil, err
-		}
+	if len(key) != KeySize {
+		return nil, errors.New("xchacha20balek2b: bad key length")
 	}
 
-	if len(key) != KeySize {
-		return nil, errors.New("key is must be either 32 or 64 bytes")
+	key, err := expandSeed(key)
+	if err != nil {
+		return nil, err
 	}
 
 	return &xchacha20SIV{
@@ -94,7 +90,7 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	msgLen := len(ciphertext) - s.Overhead()
 	if dst != nil {
 		if len(dst) != msgLen {
-			return nil, fmt.Errorf("dst must be %d bytes long, received %d", msgLen, len(dst))
+			return nil, fmt.Errorf("xchacha20balek2b: dst must be %d bytes long, received %d", msgLen, len(dst))
 		}
 		plaintext = dst
 	} else {
@@ -119,7 +115,7 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	mac := hash.Sum(nil)
 
 	if !bytes.Equal(mac, ciphertext[msgLen:]) {
-		return nil, errors.New("authentication failed")
+		return nil, errors.New("xchacha20balek2b: authentication failed")
 	}
 
 	return
@@ -133,7 +129,7 @@ func (s *xchacha20SIV) Seal(dst, nonce, plaintext, additionalData []byte) (ciphe
 	msgLen := len(plaintext)
 	if dst != nil {
 		if len(dst) != msgLen+s.Overhead() {
-			panic(fmt.Sprintf("dst must be %d bytes long, received %d", msgLen+s.Overhead(), len(dst)))
+			panic(fmt.Sprintf("xchacha20balek2b: dst must be %d bytes long, received %d", msgLen+s.Overhead(), len(dst)))
 		} else {
 			ciphertext = dst
 		}
