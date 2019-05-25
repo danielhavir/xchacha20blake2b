@@ -57,7 +57,7 @@ func expandSeed(seed []byte) (expanded []byte, err error) {
 // New returns a XChaCha20-Blake2b-SIV AEAD that uses the given 256-bit key
 func New(key []byte) (cipher.AEAD, error) {
 	if len(key) != KeySize {
-		return nil, errors.New("xchacha20balek2b: bad key length")
+		return nil, errors.New("xchacha20blake2b: bad key length")
 	}
 
 	key, err := expandSeed(key)
@@ -91,7 +91,7 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	msgLen := len(ciphertext) - s.Overhead()
 	if dst != nil {
 		if len(dst) != msgLen {
-			return nil, fmt.Errorf("xchacha20balek2b: dst must be %d bytes long, received %d", msgLen, len(dst))
+			return nil, fmt.Errorf("xchacha20blake2b: dst must be %d bytes long, received %d", msgLen, len(dst))
 		}
 		plaintext = dst
 	} else {
@@ -116,7 +116,7 @@ func (s *xchacha20SIV) Open(dst, nonce, ciphertext, additionalData []byte) (plai
 	mac := hash.Sum(nil)
 
 	if !bytes.Equal(mac, ciphertext[msgLen:]) {
-		return nil, errors.New("xchacha20balek2b: authentication failed")
+		return nil, errors.New("xchacha20blake2b: authentication failed")
 	}
 
 	return
@@ -130,7 +130,7 @@ func (s *xchacha20SIV) Seal(dst, nonce, plaintext, additionalData []byte) (ciphe
 	msgLen := len(plaintext)
 	if dst != nil {
 		if len(dst) != msgLen+s.Overhead() {
-			panic(fmt.Sprintf("xchacha20balek2b: dst must be %d bytes long, received %d", msgLen+s.Overhead(), len(dst)))
+			panic(fmt.Sprintf("xchacha20blake2b: dst must be %d bytes long, received %d", msgLen+s.Overhead(), len(dst)))
 		} else {
 			ciphertext = dst
 		}
